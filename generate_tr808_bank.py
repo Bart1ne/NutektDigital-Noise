@@ -19,17 +19,17 @@ BASE = "https://raw.githubusercontent.com/tidalcycles/sounds-tr808-fischer/main/
 SOURCES = {
     "dataKick808": ("bd8/BD5050.WAV", .43),
     "dataSnare808": ("sd8/SD5050.WAV", .38),
-    "dataClap808": ("cp8/CP.WAV", .38),
+    "dataClap808": ("cp8/CP.WAV", .27),
     "dataCH808": ("ch8/CH.WAV", .20),
     "dataOH808": ("oh8/OH50.WAV", .44),
     "dataTom808": ("lt8/LT50.WAV", .34),
     "dataRim808": ("rs8/RS.WAV", .25),
-    "dataCow808": ("cb8/CB.WAV", .25),
+    "dataMaracas808": ("ma8/MA.WAV", .24),
 }
 ORDER = [
     ("dataKick808", 1.20), ("dataKick909", 1.22), ("dataSnare808", 1.75), ("dataClap808", 1.90),
     ("dataCH808", 1.75), ("dataOH808", 2.15), ("dataCH606", 1.95), ("dataOH606", 2.10),
-    ("dataTom808", 1.45), ("dataRim808", 1.65), ("dataSnare909", 1.70), ("dataCow808", 1.55),
+    ("dataTom808", 1.45), ("dataRim808", 1.65), ("dataSnare909", 1.70), ("dataMaracas808", 1.55),
 ]
 MAX_SECS = .58
 
@@ -186,7 +186,9 @@ def run():
     bank += ["// Three unchanged Betty pattern groups; four instrument choices per group.",
              "Sample samples[12] = {"]
     for name, level in ORDER:
-        bank.append(f"  {{.size = 0, .rate = {float(FS):.1f}f, .divAc = 32768.0f, .div = 32768.0f * {level:.2f}f, .pData = &{name}[0]}},")
+        # Faster clap playback raises its pitch ~2.4 semitones, shortens decay further.
+        playback_rate = 18400 if name == "dataClap808" else FS
+        bank.append(f"  {{.size = 0, .rate = {float(playback_rate):.1f}f, .divAc = 32768.0f, .div = 32768.0f * {level:.2f}f, .pData = &{name}[0]}},")
     bank.append("};")
     Path("samplebank.h").write_text("\n".join(bank)+"\n")
     print("Written samplebank.h", flush=True)
