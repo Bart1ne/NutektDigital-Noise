@@ -1,23 +1,38 @@
 # #############################################################################
-# prologue Oscillator Makefile
+# Prologue Oscillator Makefile
 # #############################################################################
 
-PLATFORMDIR ?= $(abspath ..)
+ifeq ($(OS),Windows_NT)
+ifeq ($(MSYSTEM), MSYS)
+    detected_OS := $(shell uname -s)
+else
+    detected_OS := Windows
+endif
+else
+    detected_OS := $(shell uname -s)
+endif
 
-PROJECTDIR ?= $(abspath .)
+PLATFORMDIR = ../..
+PROJECTDIR = .
+TOOLSDIR = $(PLATFORMDIR)/../../tools
+EXTDIR = $(PLATFORMDIR)/../ext
 
-INSTALLDIR ?= $(PROJECTDIR)
+CMSISDIR = $(EXTDIR)/CMSIS/CMSIS
 
-TOOLSDIR ?= $(PLATFORMDIR)/../../tools
+# #############################################################################
+# configure archive utility
+# #############################################################################
 
-EXTDIR ?= $(PLATFORMDIR)/../ext
+ZIP = /usr/bin/zip
+ZIP_ARGS = -r -m -q
 
-CMSISDIR ?= $(EXTDIR)/CMSIS/CMSIS
-
-LDDIR ?= $(PROJECTDIR)/ld
-
-ZIP ?= /usr/bin/zip
-ZIP_ARGS := -r -m -q
+ifeq ($(OS),Windows_NT)
+ifneq ($(MSYSTEM), MSYS)
+ifneq ($(MSYSTEM), MINGW64)
+  ZIP = $(TOOLSDIR)/zip/bin/zip
+endif
+endif
+endif
 
 # #############################################################################
 # Include project specific definition
@@ -29,69 +44,69 @@ include ./project.mk
 # configure cross compilation
 # #############################################################################
 
-MCU := cortex-m4
+MCU = cortex-m4
 
-MCU_MODEL := STM32F446xE
+GCC_TARGET = arm-none-eabi-
+GCC_BIN_PATH = $(TOOLSDIR)/gcc/gcc-arm-none-eabi-5_4-2016q3/bin
 
-GCC_TARGET := arm-none-eabi-
-GCC_BIN_PATH ?= $(TOOLSDIR)/gcc/gcc-arm-none-eabi-5_4-2016q3/bin
+CC   = $(GCC_BIN_PATH)/$(GCC_TARGET)gcc
+CXXC = $(GCC_BIN_PATH)/$(GCC_TARGET)g++
+LD   = $(GCC_BIN_PATH)/$(GCC_TARGET)gcc
+#LD  = $(GCC_BIN_PATH)/$(GCC_TARGET)g++
+CP   = $(GCC_BIN_PATH)/$(GCC_TARGET)objcopy
+AS   = $(GCC_BIN_PATH)/$(GCC_TARGET)gcc -x assembler-with-cpp
+AR   = $(GCC_BIN_PATH)/$(GCC_TARGET)ar
+OD   = $(GCC_BIN_PATH)/$(GCC_TARGET)objdump
+SZ   = $(GCC_BIN_PATH)/$(GCC_TARGET)size
 
-CC   := $(GCC_BIN_PATH)/$(GCC_TARGET)gcc
-CXXC := $(GCC_BIN_PATH)/$(GCC_TARGET)g++
-LD   := $(GCC_BIN_PATH)/$(GCC_TARGET)gcc
-#LD  := $(GCC_BIN_PATH)/$(GCC_TARGET)g++
-CP   := $(GCC_BIN_PATH)/$(GCC_TARGET)objcopy
-AS   := $(GCC_BIN_PATH)/$(GCC_TARGET)gcc -x assembler-with-cpp
-AR   := $(GCC_BIN_PATH)/$(GCC_TARGET)ar
-OD   := $(GCC_BIN_PATH)/$(GCC_TARGET)objdump
-SZ   := $(GCC_BIN_PATH)/$(GCC_TARGET)size
+HEX  = $(CP) -O ihex
+BIN  = $(CP) -O binary
 
-HEX  := $(CP) -O ihex
-BIN  := $(CP) -O binary
+LDDIR = $(PROJECTDIR)/ld
+RULESPATH = $(LDDIR)
+LDSCRIPT = $(LDDIR)/userosc.ld
+DLIBS = -lm
 
-RULESPATH := $(LDDIR)
-LDSCRIPT := $(LDDIR)/userosc.ld
-DLIBS := -lm
+DADEFS = -DSTM32F446xE -DCORTEX_USE_FPU=TRUE -DARM_MATH_CM4
+DDEFS = -DSTM32F446xE -DCORTEX_USE_FPU=TRUE -DARM_MATH_CM4 -D__FPU_PRESENT
 
-DADEFS := -D$(MCU_MODEL) -DCORTEX_USE_FPU=TRUE -DARM_MATH_CM4
-DDEFS := -D$(MCU_MODEL) -DCORTEX_USE_FPU=TRUE -DARM_MATH_CM4 -D__FPU_PRESENT
+COPT = -std=c11 -mstructure-size-boundary=8 
+CXXOPT = -std=c++11 -fno-rtti -fno-exceptions -fno-non-call-exceptions
 
-COPT := -std=c11 -mstructure-size-boundary=8
-CXXOPT := -std=c++11 -fno-rtti -fno-exceptions -fno-non-call-exceptions
+LDOPT = -Xlinker --just-symbols=$(LDDIR)/osc_api.syms
 
-LDOPT := -Xlinker --just-symbols=$(LDDIR)/osc_api.syms
+CWARN = -W -Wall -Wextra
+CXXWARN =
 
-CWARN := -W -Wall -Wextra
-CXXWARN :=
+FPU_OPTS = -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -fcheck-new
 
-FPU_OPTS := -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant -fcheck-new
-
-OPT := -g -Os -mlittle-endian 
+OPT = -g -Os -mlittle-endian
 OPT += $(FPU_OPTS)
+OPT += -Wno-narrowing
 #OPT += -flto
 
-TOPT := -mthumb -mno-thumb-interwork -DTHUMB_NO_INTERWORKING -DTHUMB_PRESENT
+TOPT = -mthumb -mno-thumb-interwork -DTHUMB_NO_INTERWORKING -DTHUMB_PRESENT
 
 
 # #############################################################################
 # set targets and directories
 # #############################################################################
 
-PKGARCH := $(PROJECT).ntkdigunit
-MANIFEST := manifest.json
-PAYLOAD := payload.bin
+PKGDIR = $(PROJECT)
+PKGARCH = $(PROJECT).ntkdigunit
+MANIFEST = manifest.json
+PAYLOAD = payload.bin
+BUILDDIR = $(PROJECTDIR)/build
+OBJDIR = $(BUILDDIR)/obj
+LSTDIR = $(BUILDDIR)/lst
 
-BUILDDIR := $(PROJECTDIR)/build
-OBJDIR := $(BUILDDIR)/obj
-LSTDIR := $(BUILDDIR)/lst
+ASMSRC = $(UASMSRC)
 
-ASMSRC := $(UASMSRC)
+ASMXSRC = $(UASMXSRC)
 
-ASMXSRC := $(UASMXSRC)
+CSRC = $(PROJECTDIR)/tpl/_unit.c $(UCSRC)
 
-CSRC := $(PROJECTDIR)/tpl/_unit.c $(UCSRC)
-
-CXXSRC := $(UCXXSRC)
+CXXSRC = $(UCXXSRC)
 
 vpath %.s $(sort $(dir $(ASMSRC)))
 vpath %.S $(sort $(dir $(ASMXSRC)))
@@ -105,12 +120,12 @@ CXXOBJS := $(addprefix $(OBJDIR)/, $(notdir $(CXXSRC:.cpp=.o)))
 
 OBJS := $(ASMXOBJS) $(ASMOBJS) $(COBJS) $(CXXOBJS)
 
-DINCDIR := $(PROJECTDIR)/inc \
-           $(PROJECTDIR)/inc/api \
-           $(PLATFORMDIR)/inc \
-	   $(PLATFORMDIR)/inc/dsp \
-	   $(PLATFORMDIR)/inc/utils \
-           $(CMSISDIR)/Include
+DINCDIR = $(PROJECTDIR)/inc \
+	  $(PROJECTDIR)/inc/api \
+          $(PLATFORMDIR)/inc \
+	  $(PLATFORMDIR)/inc/dsp \
+	  $(PLATFORMDIR)/inc/utils \
+          $(CMSISDIR)/Include
 
 INCDIR := $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 
@@ -127,12 +142,12 @@ LIBDIR := $(patsubst %,-I%,$(DLIBDIR) $(ULIBDIR))
 # #############################################################################
 
 MCFLAGS   := -mcpu=$(MCU)
-ODFLAGS	  := -x --syms
+ODFLAGS	  = -x --syms
 ASFLAGS   = $(MCFLAGS) -g $(TOPT) -Wa,-alms=$(LSTDIR)/$(notdir $(<:.s=.lst)) $(ADEFS)
 ASXFLAGS  = $(MCFLAGS) -g $(TOPT) -Wa,-alms=$(LSTDIR)/$(notdir $(<:.S=.lst)) $(ADEFS)
 CFLAGS    = $(MCFLAGS) $(TOPT) $(OPT) $(COPT) $(CWARN) -Wa,-alms=$(LSTDIR)/$(notdir $(<:.c=.lst)) $(DEFS)
 CXXFLAGS  = $(MCFLAGS) $(TOPT) $(OPT) $(CXXOPT) $(CXXWARN) -Wa,-alms=$(LSTDIR)/$(notdir $(<:.cpp=.lst)) $(DEFS)
-LDFLAGS   := $(MCFLAGS) $(TOPT) $(OPT) -nostartfiles $(LIBDIR) -Wl,-Map=$(BUILDDIR)/$(PROJECT).map,--cref,--no-warn-mismatch,--library-path=$(RULESPATH),--script=$(LDSCRIPT) $(LDOPT)
+LDFLAGS   = $(MCFLAGS) $(TOPT) $(OPT) -nostartfiles $(LIBDIR) -Wl,-Map=$(BUILDDIR)/$(PROJECT).map,--cref,--no-warn-mismatch,--library-path=$(RULESPATH),--script=$(LDSCRIPT) $(LDOPT)
 
 OUTFILES := $(BUILDDIR)/$(PROJECT).elf \
 	    $(BUILDDIR)/$(PROJECT).hex \
@@ -145,12 +160,10 @@ OUTFILES := $(BUILDDIR)/$(PROJECT).elf \
 ###############################################################################
 
 all: PRE_ALL $(OBJS) $(OUTFILES) POST_ALL
-	@echo Done
-	@echo
 
 PRE_ALL:
 
-POST_ALL:
+POST_ALL: package
 
 $(OBJS): | $(BUILDDIR) $(OBJDIR) $(LSTDIR)
 
@@ -207,20 +220,16 @@ $(BUILDDIR)/%.elf: $(OBJS) $(LDSCRIPT)
 
 clean:
 	@echo Cleaning
-	-rm -fR $(PROJECTDIR)/.dep $(BUILDDIR) $(PROJECTDIR)/$(PKGARCH)
-	@echo Done
+	-rm -fR .dep $(BUILDDIR) $(PKGARCH)
 	@echo
-
-$(BUILDDIR)/$(PKGARCH): | $(OBJS) $(OUTFILES)
-	@echo Packaging to $(BUILDDIR)/$(PKGARCH)
-	@mkdir -p $(BUILDDIR)/$(PROJECT)
-	@cp -a $(PROJECTDIR)/$(MANIFEST) $(BUILDDIR)/$(PROJECT)/
-	@cp -a $(BUILDDIR)/$(PROJECT).bin $(BUILDDIR)/$(PROJECT)/$(PAYLOAD)
-	@cd $(BUILDDIR) && $(ZIP) $(ZIP_ARGS) $(PROJECT).zip $(PROJECT)
-	@mv $(BUILDDIR)/$(PROJECT).zip $(BUILDDIR)/$(PKGARCH)
-
-install: $(BUILDDIR)/$(PKGARCH)
-	@echo Deploying to $(INSTALLDIR)/$(PKGARCH)
-	@mv $(BUILDDIR)/$(PKGARCH) $(INSTALLDIR)/$(PKGARCH)
 	@echo Done
+
+package:
+	@echo Packaging to ./$(PKGARCH)
+	@mkdir -p $(PKGDIR)
+	@cp -a $(MANIFEST) $(PKGDIR)/
+	@cp -a $(BUILDDIR)/$(PROJECT).bin $(PKGDIR)/$(PAYLOAD)
+	@$(ZIP) $(ZIP_ARGS) $(PROJECT).zip $(PKGDIR)
+	@mv $(PROJECT).zip $(PKGARCH)
 	@echo
+	@echo Done
