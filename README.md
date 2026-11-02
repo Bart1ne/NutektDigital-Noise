@@ -9,7 +9,7 @@ All original pattern selection, note-triggered sequencer, randomisation, ducking
 | A1 | TR-808 Kick | Actual CC0 recording |
 | A2 | 909-style Kick | New synthetic approximation |
 | A3 | TR-808 Snare | Actual CC0 recording |
-| A4 | TR-808 Clap | Actual CC0 recording |
+| A4 | TR-808 Clap (shorter, higher) | Actual CC0 recording, pitch raised via playback rate |
 | B1 | TR-808 Closed Hat | Actual CC0 recording |
 | B2 | TR-808 Open Hat | Actual CC0 recording |
 | B3 | 606-style Closed Hat | New synthetic approximation |
@@ -17,11 +17,11 @@ All original pattern selection, note-triggered sequencer, randomisation, ducking
 | C1 | TR-808 Low Tom | Actual CC0 recording |
 | C2 | TR-808 Rim | Actual CC0 recording |
 | C3 | 909-style Snare | New synthetic approximation |
-| C4 | TR-808 Cowbell | Actual CC0 recording |
+| C4 | TR-808 Maracas | Actual CC0 recording |
 
 **Eight of twelve sounds use actual TR-808 one-shot recordings**, sourced from Michael Fischer's 1994 TR-808 Sound Sample Set, released under CC0 1.0 through [tidalcycles/sounds-tr808-fischer](https://github.com/tidalcycles/sounds-tr808-fischer).
 
-The two 909-style sounds and two 606-style sounds were synthesized from scratch and are *not* recordings of actual Roland machines. They are labeled accurately to avoid confusion.
+The TR-808 clap is shortened to 270 ms and replayed at 18400 Hz (instead of 16000 Hz) to make it shorter, brighter, and ~2.4 semitones higher. The two 909-style sounds and two 606-style sounds were synthesized from scratch and are *not* recordings of actual Roland machines. They are labeled accurately to avoid confusion.
 
 ## Building
 
