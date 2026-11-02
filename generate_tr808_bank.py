@@ -17,14 +17,14 @@ FS = 16000
 TAU = 2 * math.pi
 BASE = "https://raw.githubusercontent.com/tidalcycles/sounds-tr808-fischer/main/"
 SOURCES = {
-    "dataKick808": ("bd8/BD5050.WAV", .55),
+    "dataKick808": ("bd8/BD5050.WAV", .43),
     "dataSnare808": ("sd8/SD5050.WAV", .38),
     "dataClap808": ("cp8/CP.WAV", .38),
     "dataCH808": ("ch8/CH.WAV", .20),
-    "dataOH808": ("oh8/OH50.WAV", .55),
-    "dataTom808": ("lt8/LT50.WAV", .50),
+    "dataOH808": ("oh8/OH50.WAV", .44),
+    "dataTom808": ("lt8/LT50.WAV", .34),
     "dataRim808": ("rs8/RS.WAV", .25),
-    "dataCow808": ("cb8/CB.WAV", .30),
+    "dataCow808": ("cb8/CB.WAV", .25),
 }
 ORDER = [
     ("dataKick808", 1.20), ("dataKick909", 1.22), ("dataSnare808", 1.75), ("dataClap808", 1.90),
@@ -85,8 +85,8 @@ def decode_wav(blob, max_s):
 
 def generated(name):
     rnd = random.Random(808909606 + len(name))
-    duration = {"dataKick909": .40, "dataSnare909": .24,
-                "dataCH606": .085, "dataOH606": .36}[name]
+    duration = {"dataKick909": .30, "dataSnare909": .24,
+                "dataCH606": .085, "dataOH606": .31}[name]
     n = int(duration * FS)
     result = []
     phase = 0
