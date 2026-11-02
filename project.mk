@@ -2,11 +2,11 @@
 # Project Customization
 # #############################################################################
 
-PROJECT = noise_osc
+PROJECT = betty
 
-UCSRC =
+UCSRC = 
 
-UCXXSRC = noise.cpp
+UCXXSRC = betty.cpp
 
 UINCDIR =
 
