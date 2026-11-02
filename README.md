@@ -1,28 +1,8 @@
-# Noise Oscillator for [Korg NTS-1](https://www.korg.com/us/products/dj/nts_1/)
+# Betty Electro Kit — original sound bank
 
-## Overview
-This user oscillator implements several types of noise.  These can be useful as building blocks when doing sound design.  The shape knob will switch between the noise types.  For additional details on the noise types see [Colors of Noise](https://en.wikipedia.org/wiki/Colors_of_noise)
+A 12-voice sample replacement of Jacob Ulmert's Betty (three-voice sequencer) for Korg NTS-1 MKI. All sequencer/pattern functions preserved. This version uses original synthesized electro/industrial sounds generated specifically for this project.
 
-### 1. White Noise
-This is a gaussian distribution
+## Controls
+SHAPE: ducking; SHIFT+SHAPE: pitch; edit parameters A/B/C: patterns; Rnd: randomization.
 
-### 2. Pink Noise
--3db/octave, this is approximated using the Voss-McCartney algorithm with 8 rows.
-
-### 3. Brownian Noise
-White noise with a -6db/octive low pass first order filter.  The low pass filter is based on Korg's biquad implementation.
-
-### 4. Blue Noise
-The blue noise is created by applying a first difference operator on pink noise (generated via Voss-McCartney algorithm with 8 rows.)
-
-### 5. Violet Noise
-White noise with -6db/octave high pass first order filter.  The high pass filter is based on Korg's biquad implementation.
-
-### 6. Grey Noise
-Approximation of an equal loudness curve at 80db using a 2nd order low pass filter and a 6th order high pass filter in combination.  The low pass and high pass filters are based on Korg's biquad implementation.
-
-### Notes
-See the [logue-sdk](https://korginc.github.io/logue-sdk/) for details on:
-1. How to setup a toolchain to build the project.
-2. How to load the user oscillator into the keyboard using the [NTS-1 Sound Librarian](https://www.korg.com/us/products/dj/nts_1/librarian_contents.php).
-3. Additional support documentation.
+Based on https://github.com/ulmert/betty (BSD 3-Clause). Sample bank: new original synthesized samples.
