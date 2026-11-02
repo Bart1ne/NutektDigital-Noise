@@ -21,7 +21,7 @@ SEED=20261102
 SOUNDS=[
     ("sine_kick",      "Sine Kick",       .245, 1.10, 1.30),
     ("noisy_snare",    "Noisy Snare",     .150, 1.38, 2.30),
-    ("dry_clap",       "Dry Clap",        .118, 1.38, 2.35),
+    ("dry_clap",       "Dry Clap",        .064, 1.38, 2.35),
     ("soft_fm_tick",   "Soft FM Tick",    .046, 1.85, 3.10),
     ("tight_hat",      "Tight Noisy Hat", .046, 1.95, 3.15),
     ("airy_hat",       "Airy Open Hat",   .185, 2.15, 3.50),
@@ -69,12 +69,14 @@ def render(name,duration,seed):
             x=(.43*(.62*hp+.38*band)*math.exp(-t/.049)
                +.16*math.sin(phase)*math.exp(-t/.027))
         elif name=="dry_clap":
-            # Several very closely spaced soft noise peaks: one *clap*, not a roll.
-            pulse=(.90*math.exp(-max(0,t-.002)/.0065) if t>=.002 else 0)
-            pulse+=.85*math.exp(-max(0,t-.014)/.007) if t>=.014 else 0
-            pulse+=1.0*math.exp(-max(0,t-.027)/.010) if t>=.027 else 0
-            tail=.14*math.exp(-t/.043)
-            x=.35*(.6*hp+.4*band)*(pulse+tail)
+            # Microhouse: compact burst (three closely clustered transients).
+            # Last transient begins at 10 ms instead of 27 ms, with a short,
+            # unobtrusive tail so the clap sounds like one dry event.
+            pulse=(.75*math.exp(-(t-.0012)/.0027) if t>=.0012 else 0)
+            pulse+=.85*math.exp(-(t-.0050)/.0030) if t>=.0050 else 0
+            pulse+=1.0*math.exp(-(t-.0100)/.0045) if t>=.0100 else 0
+            tail=.09*math.exp(-t/.017)
+            x=.37*(.6*hp+.4*band)*(pulse+tail)
         elif name=="soft_fm_tick":
             f=540;modphase+=TAU*f*2.17/FS
             phase+=TAU*f/FS
