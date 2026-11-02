@@ -1,7 +1,7 @@
-name: Build NTS-1 Betty Electro Kit
+name: Build Betty Microhouse BTMIC (NTS-1 MKI)
 on:
   push:
-    branches: [master, betty-electro-kit, betty-soft-kit]
+    branches: [master, betty-electro-kit, betty-soft-kit, betty-microhouse]
   workflow_dispatch:
 permissions:
   contents: read
@@ -9,23 +9,56 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout oscillator
+      - name: Checkout Betty Microhouse
         uses: actions/checkout@v4
-      - name: Install ARM cross compiler
+      - name: Install ARM toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi make zip
-      - name: Download Korg SDK and CMSIS
+          sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi make zip
+      - name: Download Korg logue SDK and CMSIS
         run: |
           git clone --recursive --depth 1 https://github.com/korginc/logue-sdk.git /tmp/logue-sdk
           test -f /tmp/logue-sdk/platform/nutekt-digital/inc/userosc.h
-      - name: Build and package
+      - name: Synthesize 12 minimal house one-shots (BRR and WAV)
+        run: |
+          python3 generate_microhouse_bank.py
+          test -s samplebank.h
+      - name: Compile Betty for NTS-1 MKI
         run: |
           make clean
           make PLATFORMDIR=/tmp/logue-sdk/platform/nutekt-digital GCC_BIN_PATH=/usr/bin CMSISDIR=/tmp/logue-sdk/platform/ext/CMSIS/CMSIS
-      - name: Upload oscillator file
+      - name: Package BTMIC for Korg Librarian
+        run: |
+          python3 - <<'PY'
+          import zipfile, json
+          with zipfile.ZipFile("betty.ntkdigunit") as src, zipfile.ZipFile("BTMIC.ntkdigunit", "w") as dst:
+              for entry in src.infolist():
+                  new_path = "BTMIC/" + entry.filename.split("/",1)[1]
+                  data = src.read(entry)
+                  if new_path == "BTMIC/manifest.json":
+                      info = json.loads(data.decode("utf-8"))
+                      info["header"]["name"] = "BTMIC"
+                      data = (json.dumps(info,indent=2)+"\n").encode("utf-8")
+                  dst.writestr(new_path, data)
+          with zipfile.ZipFile("BTMIC.ntkdigunit") as z:
+              assert z.testzip() is None
+              assert set(z.namelist()) == {"BTMIC/","BTMIC/manifest.json","BTMIC/payload.bin"}
+              assert json.loads(z.read("BTMIC/manifest.json"))["header"]["name"]=="BTMIC"
+              assert len(z.read("BTMIC/payload.bin"))>10000
+          print("BTMIC.ntkdigunit verified (internal paths, manifest, binary)")
+          PY
+      - name: Package sample WAV previews
+        run: |
+          zip -q -j BTMIC_Previews.zip preview_wav/*.wav
+      - name: Upload Korg NTS-1 oscillator
         uses: actions/upload-artifact@v4
         with:
-          name: NTS1-Betty-Soft-Kit
-          path: betty.ntkdigunit
+          name: NTS1-BTMIC
+          path: BTMIC.ntkdigunit
+          if-no-files-found: error
+      - name: Upload sound previews
+        uses: actions/upload-artifact@v4
+        with:
+          name: BTMIC-Sound-Previews
+          path: BTMIC_Previews.zip
           if-no-files-found: error
