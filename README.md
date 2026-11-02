@@ -12,7 +12,7 @@ Every replacement sound is assigned to the **same purpose and exact index** as i
 |---|---|---|---|
 | A1 | Kick (KickJ1) | Sine Kick | 245 ms |
 | A2 | Snare (SnareSe2) | Noisy Snare | 150 ms |
-| A3 | Rimshot (Rimshot3) | Dry Clap | 118 ms |
+| A3 | Rimshot (Rimshot3) | Dry Clap (compact burst) | 64 ms |
 | A4 | Percussion (Perc1) | Soft FM Tick | 46 ms |
 | B1 | Closed Hat (Closedhat2) | Tight Noisy Hat | 46 ms |
 | B2 | Open Hat (Openhat) | Airy Open Hat | 185 ms |
@@ -22,6 +22,8 @@ Every replacement sound is assigned to the **same purpose and exact index** as i
 | C2 | Rimshot (Rimshot2) | FM Woodblock | 71 ms |
 | C3 | Triangle (Tri) | Soft FM Plick | 76 ms |
 | C4 | Percussion (Perc3) | FM Micro Click | 29 ms |
+
+v1.1: A3 clap now has a compact 10 ms three-transient burst with a 64 ms sample length, versus 27 ms burst / 118 ms length in v1.0. The other eleven sounds are unchanged.
 
 The 16 built-in 16-step Betty patterns heavily feature A1, B1 and B3, with C3/C4 sometimes firing on many consecutive steps. Consequently these latter sounds have short, restrained envelopes.
 
