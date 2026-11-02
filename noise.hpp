@@ -65,6 +65,7 @@ struct Noise{
     float angle;
     float lfo, lfoz;
     uint8_t noise_type;
+    float drive; // 0..1, controlled by SHIFT+SHAPE
 
     // for pink noise generation
     uint8_t counter;
@@ -100,6 +101,7 @@ struct Noise{
     state = State();
     state.flags = k_flags_none;
     state.noise_type = k_flag_white;
+    state.drive = 0.f;
     state.counter=0.0f;
     state.blueCounter=0.f;
 
