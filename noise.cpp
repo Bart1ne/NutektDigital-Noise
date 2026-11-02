@@ -311,6 +311,16 @@ void OSC_PARAM(uint16_t index, uint16_t value)
 
   switch (index) {
   case k_user_osc_param_id1:
+    // Edit menu: indices 0..5 correspond to the six noise colours.
+    switch (value) {
+      case 0: s.noise_type = Noise::k_flag_white; break;
+      case 1: s.noise_type = Noise::k_flag_pink; break;
+      case 2: s.noise_type = Noise::k_flag_brown; break;
+      case 3: s.noise_type = Noise::k_flag_blue; break;
+      case 4: s.noise_type = Noise::k_flag_violet; break;
+      default: s.noise_type = Noise::k_flag_grey; break;
+    }
+    break;
   case k_user_osc_param_id2:    
   case k_user_osc_param_id3:
   case k_user_osc_param_id4:
