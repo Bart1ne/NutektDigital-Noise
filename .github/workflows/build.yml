@@ -1,0 +1,32 @@
+name: Build NTS-1 Noise Oscillator
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout oscillator
+        uses: actions/checkout@v4
+      - name: Install ARM cross compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi make zip
+      - name: Download Korg SDK and CMSIS
+        run: |
+          git clone --recursive --depth 1 https://github.com/korginc/logue-sdk.git /tmp/logue-sdk
+          test -f /tmp/logue-sdk/platform/nutekt-digital/inc/userosc.h
+      - name: Build and package
+        run: |
+          make clean
+          make PLATFORMDIR=/tmp/logue-sdk/platform/nutekt-digital GCC_BIN_PATH=/usr/bin CMSISDIR=/tmp/logue-sdk/platform/ext/CMSIS/CMSIS
+          make install PLATFORMDIR=/tmp/logue-sdk/platform/nutekt-digital GCC_BIN_PATH=/usr/bin CMSISDIR=/tmp/logue-sdk/platform/ext/CMSIS/CMSIS
+      - name: Upload oscillator file
+        uses: actions/upload-artifact@v4
+        with:
+          name: NTS1-Noise-Oscillator
+          path: noise_osc.ntkdigunit
+          if-no-files-found: error
