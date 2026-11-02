@@ -23,7 +23,6 @@ jobs:
         run: |
           make clean
           make PLATFORMDIR=/tmp/logue-sdk/platform/nutekt-digital GCC_BIN_PATH=/usr/bin CMSISDIR=/tmp/logue-sdk/platform/ext/CMSIS/CMSIS
-          make install PLATFORMDIR=/tmp/logue-sdk/platform/nutekt-digital GCC_BIN_PATH=/usr/bin CMSISDIR=/tmp/logue-sdk/platform/ext/CMSIS/CMSIS
       - name: Upload oscillator file
         uses: actions/upload-artifact@v4
         with:
