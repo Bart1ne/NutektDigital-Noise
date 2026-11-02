@@ -44,6 +44,41 @@
 
 static Noise s_Noise;
 
+// Moderate per-colour output trims, to be fine-tuned by listening on hardware.
+// These are not exact loudness matching: different spectra sound different.
+static inline float noise_trim(uint8_t type) {
+  switch (type) {
+    case Noise::k_flag_white:  return 0.65f;
+    case Noise::k_flag_pink:   return 1.35f;
+    case Noise::k_flag_brown:  return 3.00f;
+    case Noise::k_flag_blue:   return 0.85f;
+    case Noise::k_flag_violet: return 0.80f;
+    default:                   return 1.00f; // grey
+  }
+}
+
+// Fast, smooth approximate tanh saturation without expensive library calls.
+static inline float soft_clip(float x) {
+  if (x >= 3.f) return 1.f;
+  if (x <= -3.f) return -1.f;
+  const float sq = x * x;
+  return x * (27.f + sq) / (27.f + 9.f * sq);
+}
+
+static inline float process_output(float sample, uint8_t type, float drive) {
+  const float trimmed = sample * noise_trim(type);
+  if (drive <= 0.0001f) {
+    // Hard safety ceiling when DRIVE is off.
+    if (trimmed > 0.98f) return 0.98f;
+    if (trimmed < -0.98f) return -0.98f;
+    return trimmed;
+  }
+  const float gain = 1.f + 4.f * drive;
+  const float makeup = 1.f / (1.f + 0.35f * (gain - 1.f));
+  return soft_clip(trimmed * gain) * makeup * 0.98f;
+}
+
+
 void OSC_INIT(uint32_t platform, uint32_t api)
 { 
   // prevents the compiler from complaining
@@ -82,7 +117,7 @@ void OSC_CYCLE(const user_osc_param_t * const params,
 
     // copy into real buffer
     for (int i = 0; i < frames; i++){
-      *(y++) = f32_to_q31(postDownSampleBuffer[i]);
+      *(y++) = f32_to_q31(process_output(postDownSampleBuffer[i], osc, s.drive));
     }    
   }
   else if (osc == Noise::k_flag_pink){
@@ -142,7 +177,7 @@ void OSC_CYCLE(const user_osc_param_t * const params,
 
     // copy into real buffer
     for (int i = 0; i < frames; i++){
-      *(y++) = f32_to_q31(postDownSampleBuffer[i]);
+      *(y++) = f32_to_q31(process_output(postDownSampleBuffer[i], osc, s.drive));
     }
   }
   else if (osc == Noise::k_flag_brown){
@@ -168,7 +203,7 @@ void OSC_CYCLE(const user_osc_param_t * const params,
 
     // copy into real buffer
     for (int i = 0; i < frames; i++){
-      *(y++) = f32_to_q31(postDownSampleBuffer[i]);
+      *(y++) = f32_to_q31(process_output(postDownSampleBuffer[i], osc, s.drive));
     }    
   }
   else if (osc == Noise::k_flag_blue){
@@ -231,7 +266,7 @@ void OSC_CYCLE(const user_osc_param_t * const params,
 
     // copy into real buffer
     for (int i = 0; i < frames; i++){
-      *(y++) = f32_to_q31(postDownSampleBuffer[i]);
+      *(y++) = f32_to_q31(process_output(postDownSampleBuffer[i], osc, s.drive));
     }
   }
   else if (osc == Noise::k_flag_violet){
@@ -257,7 +292,7 @@ void OSC_CYCLE(const user_osc_param_t * const params,
 
     // copy into real buffer
     for (int i = 0; i < frames; i++){
-      *(y++) = f32_to_q31(postDownSampleBuffer[i]);
+      *(y++) = f32_to_q31(process_output(postDownSampleBuffer[i], osc, s.drive));
     }    
   }
   else{
@@ -289,7 +324,7 @@ void OSC_CYCLE(const user_osc_param_t * const params,
 
     // copy into real buffer
     for (int i = 0; i < frames; i++){
-      *(y++) = f32_to_q31(postDownSampleBuffer[i]);
+      *(y++) = f32_to_q31(process_output(postDownSampleBuffer[i], osc, s.drive));
     }
   }
 }
@@ -345,7 +380,7 @@ void OSC_PARAM(uint16_t index, uint16_t value)
       break;
     }
   case k_user_osc_param_shiftshape:
-    // 10bit parameter
+    s.drive = param_val_to_f32(value);
     break;
     
   default:
