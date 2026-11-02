@@ -1,7 +1,7 @@
 name: Build NTS-1 Noise Oscillator
 on:
   push:
-    branches: [master]
+    branches: [master, feature/noise-type-display]
   workflow_dispatch:
 permissions:
   contents: read
