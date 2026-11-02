@@ -1,7 +1,7 @@
-name: Build NTS-1 Betty Electro Kit
+name: Build NTS-1 Betty BT808
 on:
   push:
-    branches: [master, betty-electro-kit, betty-soft-kit]
+    branches: [master, betty-electro-kit, betty-soft-kit, betty-tr808-dominant]
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,13 +19,35 @@ jobs:
         run: |
           git clone --recursive --depth 1 https://github.com/korginc/logue-sdk.git /tmp/logue-sdk
           test -f /tmp/logue-sdk/platform/nutekt-digital/inc/userosc.h
+      - name: Generate sampled 808 / synthesized 909-606 kit
+        run: python3 generate_tr808_bank.py
       - name: Build and package
         run: |
           make clean
           make PLATFORMDIR=/tmp/logue-sdk/platform/nutekt-digital GCC_BIN_PATH=/usr/bin CMSISDIR=/tmp/logue-sdk/platform/ext/CMSIS/CMSIS
+      - name: Rename internal package to BT808
+        run: |
+          python3 - <<'PY'
+          import json, zipfile
+          from pathlib import Path
+          with zipfile.ZipFile("betty.ntkdigunit") as src, zipfile.ZipFile("BT808.ntkdigunit","w") as dst:
+              for info in src.infolist():
+                  old=info.filename
+                  new="BT808/"+old.split("/",1)[1]
+                  data=src.read(info)
+                  if new.endswith("/manifest.json"):
+                      obj=json.loads(data)
+                      obj["header"]["name"]="BT808"
+                      data=(json.dumps(obj, indent=2)+"\n").encode()
+                  dst.writestr(new,data)
+          with zipfile.ZipFile("BT808.ntkdigunit") as z:
+              assert z.testzip() is None
+              assert json.loads(z.read("BT808/manifest.json"))["header"]["name"]=="BT808"
+              assert len(z.read("BT808/payload.bin"))>10000
+          PY
       - name: Upload oscillator file
         uses: actions/upload-artifact@v4
         with:
-          name: NTS1-Betty-Soft-Kit
-          path: betty.ntkdigunit
+          name: NTS1-BT808
+          path: BT808.ntkdigunit
           if-no-files-found: error
