@@ -1,0 +1,49 @@
+name: Build NOISELAB for Korg NTS-3
+on:
+  push:
+    branches: [nts3-noiselab]
+    paths:
+      - 'nts3/**'
+      - '.github/workflows/build-nts3.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ARM compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi make
+      - name: Fetch official Korg SDK
+        run: |
+          git clone --recurse-submodules --depth 1 https://github.com/korginc/logue-sdk.git /tmp/logue-sdk
+          test -f /tmp/logue-sdk/platform/nts-3_kaoss/dummy-genericfx/Makefile
+      - name: Build both units
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for unit in NOISE_A NOISE_B; do
+            cp -R "nts3/$unit" "/tmp/logue-sdk/platform/nts-3_kaoss/$unit"
+            (
+              cd "/tmp/logue-sdk/platform/nts-3_kaoss/$unit"
+              make GCC_BIN_PATH=/usr/bin
+              make install GCC_BIN_PATH=/usr/bin
+            )
+            lower=$(echo "$unit" | tr '[:upper:]' '[:lower:]')
+            cp "/tmp/logue-sdk/platform/nts-3_kaoss/$unit/$lower.nts3unit" "dist/$unit.nts3unit"
+          done
+          test -s dist/NOISE_A.nts3unit
+          test -s dist/NOISE_B.nts3unit
+          arm-none-eabi-readelf -h dist/NOISE_A.nts3unit | grep ARM
+          arm-none-eabi-readelf -h dist/NOISE_B.nts3unit | grep ARM
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NOISELAB-NTS3-A-B-v1
+          path: dist/*.nts3unit
+          if-no-files-found: error
+          retention-days: 30
