@@ -22,28 +22,23 @@ jobs:
         run: |
           git clone --recurse-submodules --depth 1 https://github.com/korginc/logue-sdk.git /tmp/logue-sdk
           test -f /tmp/logue-sdk/platform/nts-3_kaoss/dummy-genericfx/Makefile
-      - name: Build both units
+      - name: Build unified NOISELAB
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p dist
-          for unit in NOISE_A NOISE_B; do
-            cp -R "nts3/$unit" "/tmp/logue-sdk/platform/nts-3_kaoss/$unit"
-            (
-              cd "/tmp/logue-sdk/platform/nts-3_kaoss/$unit"
-              make GCC_BIN_PATH=/usr/bin
-              make install GCC_BIN_PATH=/usr/bin
-            )
-            lower=$(echo "$unit" | tr '[:upper:]' '[:lower:]')
-            cp "/tmp/logue-sdk/platform/nts-3_kaoss/$unit/$lower.nts3unit" "dist/$unit.nts3unit"
-          done
-          test -s dist/NOISE_A.nts3unit
-          test -s dist/NOISE_B.nts3unit
-          arm-none-eabi-readelf -h dist/NOISE_A.nts3unit | grep ARM
-          arm-none-eabi-readelf -h dist/NOISE_B.nts3unit | grep ARM
+          cp -R "nts3/NOISELAB" "/tmp/logue-sdk/platform/nts-3_kaoss/NOISELAB"
+          (
+            cd "/tmp/logue-sdk/platform/nts-3_kaoss/NOISELAB"
+            make GCC_BIN_PATH=/usr/bin
+            make install GCC_BIN_PATH=/usr/bin
+          )
+          cp "/tmp/logue-sdk/platform/nts-3_kaoss/NOISELAB/noiselab.nts3unit" "dist/NOISELAB.nts3unit"
+          test -s dist/NOISELAB.nts3unit
+          arm-none-eabi-readelf -h dist/NOISELAB.nts3unit | grep ARM
       - uses: actions/upload-artifact@v4
         with:
-          name: NOISELAB-NTS3-A-B-v1
+          name: NOISELAB-UNIFIED-v1
           path: dist/*.nts3unit
           if-no-files-found: error
           retention-days: 30
