@@ -6,7 +6,7 @@ namespace {
 constexpr float TWOPI=6.28318530718f;
 static float sr=48000.f, low=0.f, band=0.f, brown=0.f, pink0=0.f, pink1=0.f, lfo=0.f, env=0.f;
 static uint32_t rng=0x91AC3E7Du;
-static int32_t params[8]={0,512,120,300,0,300,512,1};
+static int32_t params[8]={0,512,370,300,0,300,512,1};
 static bool touching=false;
 static float touchGain=0.f, shotGain=0.f, shotAttack=0.f, shotCoef=0.999f;
 static float lastPulse=0.f, filterF=0.12f;

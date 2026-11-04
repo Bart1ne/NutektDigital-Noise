@@ -6,9 +6,9 @@ const __unit_header genericfx_unit_header_t unit_header = {
   .target = UNIT_TARGET_PLATFORM | k_unit_module_genericfx,
   .api = UNIT_API_VERSION,
   .dev_id = 0x4E4C4142U,
-  .unit_id = 0x4e4f4231U,
-  .version = 0x00010200U,
-  .name = "NOISE_B",
+  .unit_id = 0x4e4f4233U,
+  .version = 0x00010300U,
+  .name = "NOISE_B3",
   .num_params = 8,
   .params = {
     {0,5,0,0,k_unit_param_type_strings,0,0,0,{"TYPE"}},
