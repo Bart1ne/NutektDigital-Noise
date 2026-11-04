@@ -6,7 +6,7 @@ namespace {
 constexpr float TWOPI=6.28318530718f;
 static float sr=48000.f, low=0.f, band=0.f, brown=0.f, pink0=0.f, pink1=0.f, lfo=0.f, env=0.f;
 static uint32_t rng=0x91AC3E7Du;
-static int32_t params[8]={0,512,370,300,0,300,512,1};
+static int32_t params[8]={0,0,512,370,300,0,300,512};
 static bool touching=false;
 static float touchGain=0.f, shotGain=0.f, shotAttack=0.f, shotCoef=0.999f;
 static float lastPulse=0.f, filterF=0.12f;
@@ -20,24 +20,24 @@ static float processSample(){
  pink1=0.96300f*pink1+0.296516f*noise;
  float pink=clampf((pink0+pink1+0.1848f*noise)*0.58f,-1.f,1.f);
  brown=clampf(0.997f*brown+0.029f*noise,-1.f,1.f);
- float rate=0.2f+float(params[5])*0.025f;
+ float rate=0.2f+float(params[6])*0.025f;
  lfo+=rate/sr; if(lfo>=1.f)lfo-=1.f;
- float motion=float(params[4])/1023.f;
+ float motion=float(params[5])/1023.f;
  float mod=IS_B ? sinf(lfo*TWOPI)*motion : 0.f;
- float tone=clampf(float(params[1])/1023.f+0.28f*mod,0.f,1.f);
+ float tone=clampf(float(params[2])/1023.f+0.28f*mod,0.f,1.f);
  if((filterCounter++ & 31u)==0u){
    const float cutoff=80.f*powf(200.f,tone);
    filterF=2.f*sinf(3.14159265f*clampf(cutoff,30.f,15000.f)/sr);
-   const float decay=0.02f*powf(200.f,float(params[2])/1023.f); // 20ms to 4s
+   const float decay=0.02f*powf(200.f,float(params[3])/1023.f); // 20ms to 4s
    shotCoef=expf(-6.907755f/(sr*decay)); // -60 dB at decay time
  }
  const float f=filterF;
  const float q=0.85f; // fixed filter damping; XY-Y now controls decay
- const float density=float(params[6])/1023.f;
+ const float density=float(params[7])/1023.f;
  lastPulse+=(1.f+65.f*density)/sr;
  if(lastPulse>=1.f){lastPulse-=1.f;env=1.f;}
  env*=0.985f-0.009f*density;
- const int type=params[0];
+ const int type=params[1];
  float src=noise;
  if(type==1)src=pink;
  else if(type==2)src=brown*2.f;
@@ -58,14 +58,14 @@ static float processSample(){
    band+=h*high;
    y=low;
  }
- float amplitude=0.36f*float(params[3])/1023.f;
+ float amplitude=0.36f*float(params[4])/1023.f;
 #if IS_B
  amplitude*=1.f-0.55f*motion*(0.5f-0.5f*sinf(lfo*TWOPI));
 #endif
  float v=clampf(y*amplitude,-0.9f,0.9f);
- // MODE=1: one-shot trigger on new touch, Y controls its decay.
- // MODE=0: continuous only while touched, with smooth gate.
- if(params[7]==1){
+ // MODE=0: one-shot trigger on new touch, Y controls its decay.
+ // MODE=1: continuous only while touched, with smooth gate.
+ if(params[0]==0){
    shotGain*=shotCoef;
    shotAttack=clampf(shotAttack+1.f/(0.002f*sr),0.f,1.f);
    if(shotGain<0.000001f)shotGain=0.f;
@@ -109,8 +109,8 @@ __unit_callback void unit_set_param_value(uint8_t id,int32_t v){
 }
 __unit_callback int32_t unit_get_param_value(uint8_t id){return id<8?params[id]:0;}
 __unit_callback const char *unit_get_param_str_value(uint8_t id,int32_t v){
- if(id==7)return v?"SHOT":"HOLD";
- if(id==0){
+ if(id==0)return v?"HOLD":"SHOT";
+ if(id==1){
 #if IS_B
  static const char *names[]={"WHITE","PINK","BROWN","PULSE","CRACKLE","MIX"};
  return (v>=0 && v<6)?names[v]:"WHITE";
