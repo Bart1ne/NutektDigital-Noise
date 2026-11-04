@@ -6,16 +6,16 @@ const __unit_header genericfx_unit_header_t unit_header = {
   .target = UNIT_TARGET_PLATFORM | k_unit_module_genericfx,
   .api = UNIT_API_VERSION,
   .dev_id = 0x4E4C4142U,
-  .unit_id = 0x4e4f4234U,
-  .version = 0x00010400U,
-  .name = "NOISE_B4",
+  .unit_id = 0x4e4f4235U,
+  .version = 0x00010500U,
+  .name = "NOISE_B5",
   .num_params = 8,
   .params = {
     {0,1,0,0,k_unit_param_type_strings,0,0,0,{"MODE"}},
     {0,5,0,0,k_unit_param_type_strings,0,0,0,{"TYPE"}},
-    {0,1023,0,512,k_unit_param_type_none,0,0,0,{"TONE"}},
     {0,1023,0,370,k_unit_param_type_none,0,0,0,{"DECAY"}},
     {0,1023,0,300,k_unit_param_type_none,0,0,0,{"LEVEL"}},
+    {0,1023,0,512,k_unit_param_type_none,0,0,0,{"TONE"}},
     {0,1023,0,0,k_unit_param_type_none,0,0,0,{"MOTION"}},
     {0,1023,0,300,k_unit_param_type_none,0,0,0,{"RATE"}},
     {0,1023,0,512,k_unit_param_type_none,0,0,0,{"DENSITY"}}
@@ -24,9 +24,9 @@ const __unit_header genericfx_unit_header_t unit_header = {
  .default_mappings = {
     {k_genericfx_param_assign_none,k_genericfx_curve_linear,k_genericfx_curve_unipolar,0,1,0},
     {k_genericfx_param_assign_none,k_genericfx_curve_linear,k_genericfx_curve_unipolar,0,5,0},
-    {k_genericfx_param_assign_x,k_genericfx_curve_linear,k_genericfx_curve_unipolar,0,1023,512},
     {k_genericfx_param_assign_y,k_genericfx_curve_linear,k_genericfx_curve_unipolar,0,1023,370},
     {k_genericfx_param_assign_depth,k_genericfx_curve_linear,k_genericfx_curve_unipolar,0,1023,300},
+    {k_genericfx_param_assign_x,k_genericfx_curve_linear,k_genericfx_curve_unipolar,0,1023,512},
     {k_genericfx_param_assign_none,k_genericfx_curve_linear,k_genericfx_curve_unipolar,0,1023,0},
     {k_genericfx_param_assign_none,k_genericfx_curve_linear,k_genericfx_curve_unipolar,0,1023,300},
     {k_genericfx_param_assign_none,k_genericfx_curve_linear,k_genericfx_curve_unipolar,0,1023,512}

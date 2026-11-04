@@ -6,7 +6,7 @@ namespace {
 constexpr float TWOPI=6.28318530718f;
 static float sr=48000.f, low=0.f, band=0.f, brown=0.f, pink0=0.f, pink1=0.f, lfo=0.f, env=0.f;
 static uint32_t rng=0x91AC3E7Du;
-static int32_t params[6]={0,0,512,370,300,512};
+static int32_t params[6]={0,0,370,300,512,512};
 static bool touching=false;
 static float touchGain=0.f, shotGain=0.f, shotAttack=0.f, shotCoef=0.999f;
 static float lastPulse=0.f, filterF=0.12f;
@@ -20,11 +20,11 @@ static float processSample(){
  pink1=0.96300f*pink1+0.296516f*noise;
  float pink=clampf((pink0+pink1+0.1848f*noise)*0.58f,-1.f,1.f);
  brown=clampf(0.997f*brown+0.029f*noise,-1.f,1.f);
- float tone=clampf(float(params[2])/1023.f,0.f,1.f);
+ float tone=clampf(float(params[4])/1023.f,0.f,1.f);
  if((filterCounter++ & 31u)==0u){
    const float cutoff=80.f*powf(200.f,tone);
    filterF=2.f*sinf(3.14159265f*clampf(cutoff,30.f,15000.f)/sr);
-   const float decay=0.02f*powf(200.f,float(params[3])/1023.f); // 20ms to 4s
+   const float decay=0.02f*powf(200.f,float(params[2])/1023.f); // 20ms to 4s
    shotCoef=expf(-6.907755f/(sr*decay)); // -60 dB at decay time
  }
  const float f=filterF;
@@ -48,7 +48,7 @@ static float processSample(){
    band+=h*high;
    y=low;
  }
- float amplitude=0.36f*float(params[4])/1023.f;
+ float amplitude=0.36f*float(params[3])/1023.f;
  float v=clampf(y*amplitude,-0.9f,0.9f);
  // MODE=0: one-shot trigger on new touch, Y controls its decay.
  // MODE=1: continuous only while touched, with smooth gate.
