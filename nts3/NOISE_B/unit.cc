@@ -6,13 +6,14 @@ namespace {
 constexpr float TWOPI=6.28318530718f;
 static float sr=48000.f, low=0.f, band=0.f, brown=0.f, pink0=0.f, pink1=0.f, lfo=0.f, env=0.f;
 static uint32_t rng=0x91AC3E7Du;
-static int32_t params[8]={0,512,120,300,0,300,512,0};
+static int32_t params[8]={0,512,120,300,0,300,512,1};
 static bool touching=false;
+static float touchGain=0.f;
 static float lastPulse=0.f, filterF=0.12f;
 static unsigned filterCounter=0;
 static float clampf(float v,float a,float b){return v<a?a:(v>b?b:v);}
 static float randb(){rng^=rng<<13;rng^=rng>>17;rng^=rng<<5;return ((rng>>8)*(1.f/8388608.f))-1.f;}
-static void resetDSP(){low=band=brown=pink0=pink1=lfo=env=lastPulse=0.f;filterCounter=0;filterF=0.12f;}
+static void resetDSP(){touchGain=0.f;low=band=brown=pink0=pink1=lfo=env=lastPulse=0.f;filterCounter=0;filterF=0.12f;}
 static float processSample(){
  float noise=randb();
  pink0=0.99765f*pink0+0.099046f*noise;
@@ -60,7 +61,12 @@ static float processSample(){
  amplitude*=1.f-0.55f*motion*(0.5f-0.5f*sinf(lfo*TWOPI));
 #endif
  float v=clampf(y*amplitude,-0.9f,0.9f);
- if(params[7]==1 && !touching)v=0.f;
+ // Touch gate: attack ~3ms, release ~7ms, always silent at startup.
+ const float target=(params[7]==0 || touching)?1.f:0.f;
+ const float coefficient=(target>touchGain)?(1.f/(0.003f*sr)):(1.f/(0.007f*sr));
+ touchGain+=coefficient*(target-touchGain);
+ if(touchGain<0.00001f && target==0.f)touchGain=0.f;
+ v*=touchGain;
  return v/(1.f+fabsf(v));
 }
 }
